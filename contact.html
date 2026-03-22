@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Amarograph — Design FiveM</title>
+<title>Amarograph — Contact</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,23 +20,36 @@
     <li><a href="services.html">Services</a></li>
     <li><a href="portfolio.html">Portfolio</a></li>
     <li><a href="about.html">À propos</a></li>
-    <li><a href="contact.html">Contact</a></li>
+    <li><a href="contact.html" class="active">Contact</a></li>
   </ul>
 </nav>
-<div class="hero Z">
-  <div class="hbg"></div>
-  <p class="eyebrow" id="txt-eyebrow">Design FiveM · Créations visuelles</p>
-  <h1 class="htitle" id="txt-hero-title">Amarograph</h1>
-  <p class="hsub" id="txt-hero-sub">Vêtements · Mapping · Livery · Retexturation</p>
-  <div class="htags">
-    <span class="tag tb">FiveM / GTA V</span>
-    <span class="tag tr">Vêtements EUP</span>
-    <span class="tag tb">Retexturation</span>
-    <span class="tag tr">Livery véhicule</span>
-    <span class="tag tb">Mapping</span>
-  </div>
-  <a href="portfolio.html" class="hcta">Voir les créations</a>
+<!-- CONTACT -->
+<div class="secw" id="cbg"><div id="contact">
+<div class="ci">
+  <span class="slbl">Passez commande</span>
+  <h2 class="stit" id="txt-contact-title" style="margin-bottom:.6rem">Lancer un <span>projet</span></h2>
+  <p style="font-family:'Quantum',sans-serif;font-size:.85rem;color:var(--muted);line-height:1.8">Décrivez votre besoin, je vous réponds rapidement avec un devis sur mesure.</p>
+  <form class="cf" onsubmit="fs(event)">
+    <div class="fr2">
+      <input type="text" placeholder="Votre pseudo / nom" required>
+      <input type="text" placeholder="Serveur FiveM (si applicable)">
+    </div>
+    <input type="email" placeholder="Email ou Discord (ex: pseudo#0000)">
+    <select><option value="" disabled selected>Type de création</option><option>Vêtement EUP / FiveM</option><option>Livery véhicule</option><option>Retexturation mapping</option><option>Design graphique / Logo</option><option>Pack complet serveur</option><option>Autre</option></select>
+    <textarea placeholder="Décrivez votre projet : style, couleurs, références, délai..."></textarea>
+    <button type="submit" class="fsub">Envoyer la demande</button>
+  </form>
 </div>
+</div></div>
+
+<footer>
+  <span class="flogo">Amarograph</span>
+  <div class="sl">
+    <a class="sb" href="#">Discord</a>
+    <a class="sb" href="#">TikTok</a>
+  </div>
+  <span class="fr">© 2025 — Design FiveM</span>
+</footer>
 
 <footer>
   <span class="flogo">Amarograph</span>

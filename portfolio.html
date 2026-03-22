@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Amarograph — Design FiveM</title>
+<title>Amarograph — Portfolio</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,25 +18,26 @@
   <a href="index.html" class="logo" style="text-decoration:none">Amarograph</a>
   <ul class="navl">
     <li><a href="services.html">Services</a></li>
-    <li><a href="portfolio.html">Portfolio</a></li>
+    <li><a href="portfolio.html" class="active">Portfolio</a></li>
     <li><a href="about.html">À propos</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
 </nav>
-<div class="hero Z">
-  <div class="hbg"></div>
-  <p class="eyebrow" id="txt-eyebrow">Design FiveM · Créations visuelles</p>
-  <h1 class="htitle" id="txt-hero-title">Amarograph</h1>
-  <p class="hsub" id="txt-hero-sub">Vêtements · Mapping · Livery · Retexturation</p>
-  <div class="htags">
-    <span class="tag tb">FiveM / GTA V</span>
-    <span class="tag tr">Vêtements EUP</span>
-    <span class="tag tb">Retexturation</span>
-    <span class="tag tr">Livery véhicule</span>
-    <span class="tag tb">Mapping</span>
+<!-- PORTFOLIO -->
+<div class="secw" id="portfolio"><section>
+  <span class="slbl" id="txt-portfolio-label">Réalisations</span>
+  <h2 class="stit" id="txt-portfolio-title">Le <span>portfolio</span></h2>
+  <div class="pf" id="port-filter">
+    <button class="fb active" onclick="pfFilter('all',this)">Tout</button>
+    <button class="fb" onclick="pfFilter('vetement',this)">Vêtements</button>
+    <button class="fb" onclick="pfFilter('livery',this)">Livery</button>
+    <button class="fb" onclick="pfFilter('mapping',this)">Mapping</button>
+    <button class="fb" onclick="pfFilter('design',this)">Design</button>
   </div>
-  <a href="portfolio.html" class="hcta">Voir les créations</a>
-</div>
+  <div class="pg-photos" id="portfolio-grid">
+    <div class="pg-empty" id="port-empty">Aucune création pour l'instant — revenez bientôt !</div>
+  </div>
+</section></div>
 
 <footer>
   <span class="flogo">Amarograph</span>
