@@ -120,13 +120,12 @@ function drawHUD(a){
   requestAnimationFrame(aR);
 })(0);
 /* ══════════════════════════════════
-   HEXAGONE BACKGROUND — VAGUE NEON BLEU↔ROUGE
+   HEXAGONE BACKGROUND — STYLE 3D NEON WAVE
 ══════════════════════════════════ */
 const hc=document.getElementById('hexbg');
 const hx=hc.getContext('2d');
 let W,H,hexes=[];
 
-// Neon border canvas désactivé
 function resizeNeon(){}
 function drawNeonBorder(){}
 
@@ -138,19 +137,23 @@ function resize(){
 }
 function buildHexes(){
   hexes=[];
-  const R=24,dx=R*Math.sqrt(3),dy=R*1.5;
-  const cols=Math.ceil(W/dx)+3,rows=Math.ceil(H/dy)+3;
-  for(let row=-1;row<rows;row++)for(let col=-1;col<cols;col++){
+  const R=22,gap=3;
+  const dx=(R+gap)*Math.sqrt(3),dy=(R+gap)*1.5;
+  const cols=Math.ceil(W/dx)+4,rows=Math.ceil(H/dy)+4;
+  for(let row=-2;row<rows;row++)for(let col=-2;col<cols;col++){
     const x=col*dx+(row%2)*dx/2,y=row*dy;
     hexes.push({x,y,R,
       ph:Math.random()*Math.PI*2,
-      sp:.15+Math.random()*.3,
-      ba:.018+Math.random()*.025});
+      sp:.08+Math.random()*.15,
+      glow:0, prevGlow:0});
   }
 }
 function hexP(cx,cy,r){
   hx.beginPath();
-  for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6;i===0?hx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):hx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a))}
+  for(let i=0;i<6;i++){
+    const a=Math.PI/3*i-Math.PI/6;
+    i===0?hx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):hx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+  }
   hx.closePath();
 }
 let mx=-999,my=-999;
@@ -158,49 +161,82 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY+window.scrol
 
 function drawHex(t){
   hx.clearRect(0,0,W,H);
-  const scrollY=window.scrollY;
 
-  // Vague néon diagonale qui balaye l'écran
-  // La vague se déplace en diagonale, créant un dégradé bleu→rouge
-  const waveSpeed=0.12;
-  const wavePos=t*waveSpeed;
+  // Deux vagues de lumière qui balayent en diagonale
+  // Vague 1 : bleu (#00AAFF), Vague 2 : rouge (#CC0020)
+  const wave1Pos=((t*0.06)%1.6)-0.3;   // bleu, lent
+  const wave2Pos=((t*0.06+0.8)%1.6)-0.3; // rouge, décalé
 
   hexes.forEach(h=>{
-    const pulse=h.ba+Math.sin(t*h.sp+h.ph)*.015;
+    // Position normalisée en diagonale (0→1)
+    const diag=(h.x+h.y)/(W+H);
+
+    // Distance de chaque vague
+    const d1=Math.abs(diag-wave1Pos);
+    const d2=Math.abs(diag-wave2Pos);
+
+    // Intensité des vagues (plus serré = plus intense)
+    const waveWidth=0.12;
+    const i1=Math.max(0,1-d1/waveWidth);
+    const i2=Math.max(0,1-d2/waveWidth);
+
+    // Courbe d'intensité douce
+    const glow1=Math.pow(i1,1.5);
+    const glow2=Math.pow(i2,1.5);
 
     // Boost souris
     const dmx=h.x-mx,dmy=h.y-my,distM=Math.sqrt(dmx*dmx+dmy*dmy);
-    const boostMouse=distM<200?.3*(1-distM/200):0;
+    const boostMouse=distM<160?0.6*(1-distM/160):0;
 
-    // Vague néon — position normalisée de l'hexagone sur la diagonale
-    const diag=(h.x/W+h.y/H)*0.5; // 0 à 1 en diagonale
-    const wavePhase=(diag-wavePos)%1;
-    // Intensité de la vague (pic lumineux qui passe)
-    const waveDist=Math.abs(((wavePhase%1)+1)%1-0.5)*2; // 0 au centre, 1 aux bords
-    const waveGlow=Math.pow(Math.max(0,1-waveDist*3),2)*0.45;
+    // Pulse subtil de base
+    const basePulse=0.03+Math.sin(t*h.sp+h.ph)*0.015;
 
-    const boost=Math.max(boostMouse,waveGlow);
-    const a=Math.min(pulse+boost,.7);
+    // Glow total avec smooth
+    const targetGlow=Math.min(Math.max(glow1,glow2,boostMouse,basePulse),1);
+    h.glow+=(targetGlow-h.glow)*0.2;
+    const g=h.glow;
 
-    // Couleur dégradé bleu↔rouge basé sur la position diagonale + temps
-    const colorPhase=((diag+t*0.05)%1+1)%1;
-    const sinP=Math.sin(colorPhase*Math.PI);
-    const colR=Math.round(sinP*204);
-    const colG=Math.round((1-sinP)*170);
-    const colB=Math.round(255-(255-32)*sinP);
+    // Couleur : mélange bleu/rouge selon quelle vague domine
+    const blueAmt=Math.max(glow1,boostMouse*0.7,basePulse);
+    const redAmt=Math.max(glow2,boostMouse*0.3);
+    const total=blueAmt+redAmt+0.001;
+    const blueMix=blueAmt/total;
+    const redMix=redAmt/total;
+
+    // Bleu: 0,170,255  Rouge: 204,0,32
+    const colR=Math.round(blueMix*0+redMix*204);
+    const colG=Math.round(blueMix*170+redMix*0);
+    const colB=Math.round(blueMix*255+redMix*32);
 
     hexP(h.x,h.y,h.R);
 
-    // Contour
-    hx.strokeStyle=`rgba(${colR},${colG},${colB},${Math.min(a+.04,.8)})`;
-    hx.lineWidth=waveGlow>0.1?1.3:.7;
+    // Fond sombre de chaque hexagone (comme la vidéo)
+    hx.fillStyle=`rgba(8,10,18,${0.6+g*0.3})`;
+    hx.fill();
+
+    // Contour — très sombre au repos, lumineux au passage de la vague
+    const strokeAlpha=0.06+g*0.85;
+    const lw=0.5+g*1.8;
+    hx.strokeStyle=`rgba(${colR},${colG},${colB},${strokeAlpha})`;
+    hx.lineWidth=lw;
     hx.stroke();
 
-    // Remplissage lumineux
-    if(boost>.06||Math.sin(t*h.sp+h.ph)>.85){
-      const fillA=waveGlow>0.05?Math.min(waveGlow*.6,.3):Math.min(a*.25,.08);
+    // Remplissage lumineux quand la vague passe (glow intérieur)
+    if(g>0.1){
+      const fillA=Math.pow(g,2)*0.35;
       hx.fillStyle=`rgba(${colR},${colG},${colB},${fillA})`;
       hx.fill();
+
+      // Glow radial pour effet néon intense
+      if(g>0.3){
+        const grad=hx.createRadialGradient(h.x,h.y,0,h.x,h.y,h.R*1.8);
+        grad.addColorStop(0,`rgba(${colR},${colG},${colB},${g*0.15})`);
+        grad.addColorStop(1,`rgba(${colR},${colG},${colB},0)`);
+        hx.fillStyle=grad;
+        hx.beginPath();
+        hx.arc(h.x,h.y,h.R*1.8,0,Math.PI*2);
+        hx.fill();
+      }
     }
   });
 }
