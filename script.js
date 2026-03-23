@@ -120,93 +120,15 @@ function drawHUD(a){
   requestAnimationFrame(aR);
 })(0);
 /* ══════════════════════════════════
-   HEXAGONE BACKGROUND + NEON BORDER
+   HEXAGONE BACKGROUND — VAGUE NEON BLEU↔ROUGE
 ══════════════════════════════════ */
 const hc=document.getElementById('hexbg');
 const hx=hc.getContext('2d');
 let W,H,hexes=[];
 
-/* ── NEON BORDER ── */
-const nb=document.getElementById('neon-border');
-const nx=nb?nb.getContext('2d'):null;
-let NW,NH;
-// Position du point néon qui fait le tour de l'écran
-let neonX=0,neonY=0;
-
-function resizeNeon(){
-  if(!nb)return;
-  NW=nb.width=window.innerWidth;
-  NH=nb.height=window.innerHeight;
-}
-resizeNeon();
-
-// Couleur dégradé bleu→rouge selon la position (0-1) sur le périmètre
-function neonColor(p){
-  // p=0 bleu, p=0.5 rouge, p=1 bleu (cycle)
-  const r=Math.round(0+(204-0)*Math.sin(p*Math.PI));
-  const g=Math.round(170-(170)*Math.sin(p*Math.PI));
-  const b=Math.round(255-(255-32)*Math.sin(p*Math.PI));
-  return {r,g,b};
-}
-
-function drawNeonBorder(t){
-  if(!nx)return;
-  nx.clearRect(0,0,NW,NH);
-  const perim=2*(NW+NH);
-  // Point principal qui fait le tour
-  const speed=0.08;
-  const pos=((t*speed)%1+1)%1;
-  const p=pos*perim;
-
-  // Calculer la position x,y du point néon sur le bord
-  let px,py;
-  if(p<NW){px=p;py=0;}
-  else if(p<NW+NH){px=NW;py=p-NW;}
-  else if(p<2*NW+NH){px=NW-(p-NW-NH);py=NH;}
-  else{px=0;py=NH-(p-2*NW-NH);}
-
-  neonX=px;neonY=py;
-
-  // Dessiner le trait néon avec glow dégradé
-  const trailLen=0.35;
-  const steps=120;
-  for(let i=0;i<steps;i++){
-    const frac=i/steps;
-    const trailPos=((pos-frac*trailLen)%1+1)%1;
-    const tp=trailPos*perim;
-    let tx,ty;
-    if(tp<NW){tx=tp;ty=0;}
-    else if(tp<NW+NH){tx=NW;ty=tp-NW;}
-    else if(tp<2*NW+NH){tx=NW-(tp-NW-NH);ty=NH;}
-    else{tx=0;ty=NH-(tp-2*NW-NH);}
-
-    const c=neonColor(trailPos);
-    const alpha=Math.pow(1-frac,2)*0.9;
-    const size=3+(1-frac)*4;
-
-    nx.beginPath();
-    nx.arc(tx,ty,size,0,Math.PI*2);
-    nx.fillStyle=`rgba(${c.r},${c.g},${c.b},${alpha})`;
-    nx.fill();
-
-    // Glow extérieur
-    if(frac<0.3){
-      nx.beginPath();
-      nx.arc(tx,ty,size+8,0,Math.PI*2);
-      nx.fillStyle=`rgba(${c.r},${c.g},${c.b},${alpha*0.15})`;
-      nx.fill();
-    }
-  }
-
-  // Point principal brillant
-  const mc=neonColor(pos);
-  nx.beginPath();nx.arc(px,py,6,0,Math.PI*2);
-  nx.fillStyle=`rgba(${mc.r},${mc.g},${mc.b},0.9)`;nx.fill();
-  nx.beginPath();nx.arc(px,py,14,0,Math.PI*2);
-  nx.fillStyle=`rgba(${mc.r},${mc.g},${mc.b},0.2)`;nx.fill();
-  nx.beginPath();nx.arc(px,py,24,0,Math.PI*2);
-  nx.fillStyle=`rgba(${mc.r},${mc.g},${mc.b},0.07)`;nx.fill();
-}
+// Neon border canvas désactivé
+function resizeNeon(){}
+function drawNeonBorder(){}
 
 /* ── HEXAGONES ── */
 function resize(){
@@ -216,13 +138,14 @@ function resize(){
 }
 function buildHexes(){
   hexes=[];
-  const R=28,dx=R*Math.sqrt(3),dy=R*1.5;
+  const R=24,dx=R*Math.sqrt(3),dy=R*1.5;
   const cols=Math.ceil(W/dx)+3,rows=Math.ceil(H/dy)+3;
   for(let row=-1;row<rows;row++)for(let col=-1;col<cols;col++){
     const x=col*dx+(row%2)*dx/2,y=row*dy;
-    hexes.push({x,y,R,col:Math.abs(row+col)%3!==0?'0,170,255':'204,0,32',
-      ph:Math.random()*Math.PI*2,sp:.2+Math.random()*.35,ba:.014+Math.random()*.022,
-      glow:0});
+    hexes.push({x,y,R,
+      ph:Math.random()*Math.PI*2,
+      sp:.15+Math.random()*.3,
+      ba:.018+Math.random()*.025});
   }
 }
 function hexP(cx,cy,r){
@@ -235,54 +158,47 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY+window.scrol
 
 function drawHex(t){
   hx.clearRect(0,0,W,H);
-  // Position du néon en coordonnées scroll
   const scrollY=window.scrollY;
-  const nxScreen=neonX, nyScreen=neonY+scrollY;
+
+  // Vague néon diagonale qui balaye l'écran
+  // La vague se déplace en diagonale, créant un dégradé bleu→rouge
+  const waveSpeed=0.12;
+  const wavePos=t*waveSpeed;
 
   hexes.forEach(h=>{
-    const pulse=h.ba+Math.sin(t*h.sp+h.ph)*.012;
+    const pulse=h.ba+Math.sin(t*h.sp+h.ph)*.015;
 
     // Boost souris
     const dmx=h.x-mx,dmy=h.y-my,distM=Math.sqrt(dmx*dmx+dmy*dmy);
-    const boostMouse=distM<180?.25*(1-distM/180):0;
+    const boostMouse=distM<200?.3*(1-distM/200):0;
 
-    // Boost néon border — les hexagones proches du néon s'illuminent
-    const dnx=h.x-nxScreen,dny=h.y-nyScreen,distN=Math.sqrt(dnx*dnx+dny*dny);
-    const neonRadius=220;
-    const targetGlow=distN<neonRadius?0.5*(1-distN/neonRadius):0;
-    // Smooth transition du glow
-    h.glow+=(targetGlow-h.glow)*0.15;
-    const boostNeon=h.glow;
+    // Vague néon — position normalisée de l'hexagone sur la diagonale
+    const diag=(h.x/W+h.y/H)*0.5; // 0 à 1 en diagonale
+    const wavePhase=(diag-wavePos)%1;
+    // Intensité de la vague (pic lumineux qui passe)
+    const waveDist=Math.abs(((wavePhase%1)+1)%1-0.5)*2; // 0 au centre, 1 aux bords
+    const waveGlow=Math.pow(Math.max(0,1-waveDist*3),2)*0.45;
 
-    const boost=Math.max(boostMouse,boostNeon);
+    const boost=Math.max(boostMouse,waveGlow);
     const a=Math.min(pulse+boost,.7);
 
-    // Couleur: dégradé bleu→rouge basé sur la proximité du néon
-    let colR,colG,colB;
-    if(boostNeon>0.05){
-      // Couleur interpolée vers le néon
-      const neonP=((t*0.08)%1+1)%1;
-      const nc=neonColor(neonP);
-      const mix=Math.min(boostNeon*2,1);
-      // Base color
-      const isBlue=h.col==='0,170,255';
-      const br=isBlue?0:204, bg=isBlue?170:0, bb=isBlue?255:32;
-      colR=Math.round(br+(nc.r-br)*mix);
-      colG=Math.round(bg+(nc.g-bg)*mix);
-      colB=Math.round(bb+(nc.b-bb)*mix);
-    } else {
-      const parts=h.col.split(',');
-      colR=+parts[0];colG=+parts[1];colB=+parts[2];
-    }
+    // Couleur dégradé bleu↔rouge basé sur la position diagonale + temps
+    const colorPhase=((diag+t*0.05)%1+1)%1;
+    const sinP=Math.sin(colorPhase*Math.PI);
+    const colR=Math.round(sinP*204);
+    const colG=Math.round((1-sinP)*170);
+    const colB=Math.round(255-(255-32)*sinP);
 
     hexP(h.x,h.y,h.R);
-    hx.strokeStyle=`rgba(${colR},${colG},${colB},${Math.min(a+.03,.75)})`;
-    hx.lineWidth=boostNeon>0.1?1.2:.75;
+
+    // Contour
+    hx.strokeStyle=`rgba(${colR},${colG},${colB},${Math.min(a+.04,.8)})`;
+    hx.lineWidth=waveGlow>0.1?1.3:.7;
     hx.stroke();
 
-    // Remplissage lumineux si boost actif
-    if(boost>.04||Math.sin(t*h.sp+h.ph)>.82){
-      const fillA=boostNeon>0.1?Math.min(boostNeon*.5,.25):Math.min(a*.3,.09);
+    // Remplissage lumineux
+    if(boost>.06||Math.sin(t*h.sp+h.ph)>.85){
+      const fillA=waveGlow>0.05?Math.min(waveGlow*.6,.3):Math.min(a*.25,.08);
       hx.fillStyle=`rgba(${colR},${colG},${colB},${fillA})`;
       hx.fill();
     }
