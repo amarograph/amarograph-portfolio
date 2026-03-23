@@ -8,7 +8,8 @@
   --text:#D8E8F8;--muted:#4A5F70;
 }
 html{scroll-behavior:smooth}
-body{background:var(--dark);color:var(--text);overflow-x:hidden;cursor:none;font-family:'Quantum',sans-serif}
+body{background:var(--dark);color:var(--text);overflow-x:hidden;cursor:none;font-family:'Quantum',sans-serif;
+  display:flex;flex-direction:column;min-height:100vh}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9990;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.022) 2px,rgba(0,0,0,.022) 4px)}
 
@@ -158,8 +159,8 @@ section{padding:6rem 2rem;max-width:1200px;margin:0 auto}
 .fsub:hover{background:linear-gradient(135deg,rgba(0,170,255,.28),rgba(204,0,32,.2));box-shadow:0 0 22px rgba(0,170,255,.14)}
 
 /* ── FOOTER ── */
-footer{background:var(--dark);padding:2rem 3rem;display:flex;align-items:center;
-  justify-content:space-between;flex-wrap:wrap;gap:1rem;position:relative;z-index:2}
+footer{background:rgba(4,6,10,.85);padding:2rem 3rem;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:1rem;position:relative;z-index:2;margin-top:auto}
 .flogo{font-family:'Arc',sans-serif;font-size:1rem;letter-spacing:.25em;
   background:linear-gradient(90deg,var(--b),var(--r));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .fr{font-family:'Quantum',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
