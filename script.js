@@ -4,12 +4,23 @@ const cc=document.getElementById('cur-canvas');
 const cx=cc.getContext('2d');
 const CX=27,CY=27;
 let lx=0,ly=0,angle=0,spd=1,tgt=1,lt=0;
+let hovering=false;
 
 document.addEventListener('mousemove',e=>{
   curWrap.style.left=e.clientX+'px';
   curWrap.style.top=e.clientY+'px';
   const dx=e.clientX-lx,dy=e.clientY-ly,vel=Math.sqrt(dx*dx+dy*dy);
-  tgt=0.8+vel*0.08;lx=e.clientX;ly=e.clientY;
+  const baseSpd=hovering?4:0.8;
+  tgt=baseSpd+vel*0.08;lx=e.clientX;ly=e.clientY;
+});
+
+/* Détection survol éléments cliquables */
+const clickableSelector='a,button,select,input,textarea,[onclick],.fb,.sb,.hcta,.fsub,.sc,.pg-photo,.lb-close,.lb-nav,.adm-btn,.adm-tab,.shop-item,.shop-cart-item-remove,label[for]';
+document.addEventListener('mouseover',e=>{
+  if(e.target.closest(clickableSelector)){hovering=true;tgt=4.5;}
+});
+document.addEventListener('mouseout',e=>{
+  if(e.target.closest(clickableSelector)){hovering=false;tgt=0.8;}
 });
 
 function drawHUD(a){
@@ -114,7 +125,8 @@ function drawHUD(a){
 
 (function aR(ts){
   const dt=lt?(ts-lt)/1000:0.016;lt=ts;
-  spd+=(tgt-spd)*0.1;tgt+=(0.8-tgt)*0.04;
+  spd+=(tgt-spd)*0.12;
+  if(!hovering) tgt+=(0.8-tgt)*0.04;
   angle+=spd*dt;
   drawHUD(angle);
   requestAnimationFrame(aR);
