@@ -764,3 +764,214 @@ function fs(e) {
     setTimeout(() => { btn.textContent = 'Envoyer la demande'; btn.classList.remove('error'); }, 3000);
   });
 }
+
+/* ══════════════════════════════════
+   BOUTIQUE — TEBEX HEADLESS API
+══════════════════════════════════ */
+const TEBEX_TOKEN = 'wmy3-a52d1b7510044e8f70f026e931a8c0b85e82e819';
+const TEBEX_API = 'https://headless.tebex.io/api/accounts/' + TEBEX_TOKEN;
+let shopBasketIdent = localStorage.getItem('amaro_basket') || null;
+let shopBasketData = null;
+let shopAllPackages = [];
+let shopCategories = [];
+
+// Init boutique si on est sur la page
+if(document.getElementById('shop-grid')) {
+  shopInit();
+}
+
+async function shopInit() {
+  try {
+    await shopFetchProducts();
+    shopRenderFilters();
+    shopRender('all');
+  } catch(e) {
+    console.error('Shop init error:', e);
+    const loading = document.getElementById('shop-loading');
+    if(loading) loading.innerHTML = '<p>Impossible de charger la boutique. Réessayez plus tard.</p>';
+  }
+}
+
+async function shopFetchProducts() {
+  const loading = document.getElementById('shop-loading');
+  const res = await fetch(TEBEX_API + '/categories?includePackages=1');
+  if(!res.ok) throw new Error('API error ' + res.status);
+  const json = await res.json();
+  shopCategories = json.data || [];
+  shopAllPackages = [];
+  shopCategories.forEach(cat => {
+    if(cat.packages) {
+      cat.packages.forEach(pkg => {
+        pkg._category = cat.name;
+        pkg._categoryId = cat.id;
+        shopAllPackages.push(pkg);
+      });
+    }
+  });
+  if(loading) loading.style.display = 'none';
+}
+
+function shopRenderFilters() {
+  const filterDiv = document.getElementById('shop-filter');
+  if(!filterDiv || shopCategories.length === 0) return;
+  let html = '<button class="fb active" onclick="shopFilter(\'all\',this)">Tout</button>';
+  shopCategories.forEach(cat => {
+    if(cat.packages && cat.packages.length > 0) {
+      html += '<button class="fb" onclick="shopFilter(\'' + cat.id + '\',this)">' + cat.name + '</button>';
+    }
+  });
+  filterDiv.innerHTML = html;
+}
+
+function shopFilter(catId, btn) {
+  document.querySelectorAll('#shop-filter .fb').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  shopRender(catId);
+}
+
+function shopRender(filter) {
+  const grid = document.getElementById('shop-grid');
+  const empty = document.getElementById('shop-empty');
+  if(!grid) return;
+
+  let packages = filter === 'all' ? shopAllPackages : shopAllPackages.filter(p => String(p._categoryId) === String(filter));
+
+  if(packages.length === 0) {
+    grid.innerHTML = '';
+    if(empty) empty.style.display = 'block';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+
+  grid.innerHTML = packages.map((pkg, i) => {
+    const img = pkg.image ? '<img class="shop-card-img" src="' + pkg.image + '" alt="' + (pkg.name || '') + '" loading="lazy">'
+      : '<div class="shop-card-img-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>';
+    const price = pkg.total_price != null ? pkg.total_price.toFixed(2) + ' ' + (pkg.currency || '€')
+      : pkg.base_price != null ? pkg.base_price.toFixed(2) + ' €' : 'N/A';
+    const desc = pkg.description ? pkg.description.replace(/<[^>]*>/g, '').substring(0, 100) : '';
+    const delay = (i % 8) * 0.08;
+    return '<div class="shop-card reveal" style="transition-delay:' + delay + 's">'
+      + img
+      + '<div class="shop-card-body">'
+      + '<p class="shop-card-name">' + (pkg.name || 'Produit') + '</p>'
+      + '<p class="shop-card-desc">' + desc + '</p>'
+      + '</div>'
+      + '<div class="shop-card-footer">'
+      + '<span class="shop-card-price">' + price + '</span>'
+      + '<button class="shop-btn" onclick="shopAddToCart(' + pkg.id + ',this)">Ajouter</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  // Trigger reveal animations
+  requestAnimationFrame(() => {
+    grid.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+  });
+}
+
+async function shopEnsureBasket() {
+  if(shopBasketIdent && shopBasketData) return;
+  if(shopBasketIdent) {
+    try {
+      const res = await fetch(TEBEX_API + '/baskets/' + shopBasketIdent);
+      if(res.ok) {
+        shopBasketData = await res.json();
+        return;
+      }
+    } catch(e) {}
+  }
+  // Create new basket
+  const res = await fetch(TEBEX_API + '/baskets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ complete_url: window.location.href, cancel_url: window.location.href })
+  });
+  if(!res.ok) throw new Error('Cannot create basket');
+  shopBasketData = await res.json();
+  shopBasketIdent = shopBasketData.data?.ident || shopBasketData.ident;
+  localStorage.setItem('amaro_basket', shopBasketIdent);
+}
+
+async function shopAddToCart(pkgId, btn) {
+  if(btn) { btn.textContent = '...'; btn.disabled = true; }
+  try {
+    await shopEnsureBasket();
+    const res = await fetch(TEBEX_API + '/baskets/' + shopBasketIdent + '/packages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ package_id: pkgId, quantity: 1 })
+    });
+    if(!res.ok) throw new Error('Add failed');
+    shopBasketData = await res.json();
+    if(btn) { btn.textContent = 'Ajouté ✓'; btn.classList.add('added'); setTimeout(() => { btn.textContent = 'Ajouter'; btn.classList.remove('added'); btn.disabled = false; }, 1500); }
+    shopUpdateCartUI();
+  } catch(e) {
+    console.error('Add to cart error:', e);
+    if(btn) { btn.textContent = 'Erreur'; btn.disabled = false; setTimeout(() => { btn.textContent = 'Ajouter'; }, 1500); }
+  }
+}
+
+async function shopRemoveFromCart(pkgId) {
+  if(!shopBasketIdent) return;
+  try {
+    const res = await fetch(TEBEX_API + '/baskets/' + shopBasketIdent + '/packages/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ package_id: pkgId })
+    });
+    if(res.ok) {
+      shopBasketData = await res.json();
+      shopUpdateCartUI();
+    }
+  } catch(e) { console.error('Remove error:', e); }
+}
+
+function shopUpdateCartUI() {
+  const packages = shopBasketData?.data?.packages || shopBasketData?.packages || [];
+  const cartEl = document.getElementById('shop-cart');
+  const toggleEl = document.getElementById('shop-cart-toggle');
+  const countEl = document.getElementById('shop-cart-count');
+  const toggleCountEl = document.getElementById('shop-cart-toggle-count');
+  const itemsEl = document.getElementById('shop-cart-items');
+  const totalEl = document.getElementById('shop-cart-total');
+
+  const count = packages.length;
+  if(count === 0) {
+    if(cartEl) cartEl.style.display = 'none';
+    if(toggleEl) toggleEl.style.display = 'none';
+    return;
+  }
+
+  if(cartEl) cartEl.style.display = 'block';
+  if(toggleEl) toggleEl.style.display = 'flex';
+  if(countEl) countEl.textContent = count;
+  if(toggleCountEl) toggleCountEl.textContent = count;
+
+  if(itemsEl) {
+    itemsEl.innerHTML = packages.map(p =>
+      '<div class="shop-cart-item">'
+      + '<span class="shop-cart-item-name">' + (p.name || 'Produit') + '</span>'
+      + '<span class="shop-cart-item-price">' + (p.in_basket?.price || p.price || '?') + '</span>'
+      + '<button class="shop-cart-item-remove" onclick="shopRemoveFromCart(' + p.id + ')">&times;</button>'
+      + '</div>'
+    ).join('');
+  }
+
+  const basePrice = shopBasketData?.data?.base_price || shopBasketData?.base_price || 0;
+  const currency = shopBasketData?.data?.currency || shopBasketData?.currency || 'EUR';
+  if(totalEl) totalEl.textContent = (typeof basePrice === 'number' ? basePrice.toFixed(2) : basePrice) + ' ' + currency;
+}
+
+function shopToggleCart() {
+  const cartEl = document.getElementById('shop-cart');
+  if(cartEl) cartEl.style.display = cartEl.style.display === 'none' ? 'block' : 'none';
+}
+
+function shopCheckout() {
+  const url = shopBasketData?.data?.links?.checkout || shopBasketData?.links?.checkout;
+  if(url) {
+    window.open(url, '_blank');
+  } else {
+    alert('Erreur : impossible de trouver le lien de paiement.');
+  }
+}

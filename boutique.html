@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Amarograph — Portfolio</title>
+<title>Amarograph — Boutique</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,28 +17,46 @@
 <nav class="Z">
   <a href="index.html" class="logo" style="text-decoration:none">Amarograph</a>
   <ul class="navl">
-    <li><a href="boutique.html">Boutique</a></li>
+    <li><a href="boutique.html" class="active">Boutique</a></li>
     <li><a href="services.html">Services</a></li>
-    <li><a href="portfolio.html" class="active">Portfolio</a></li>
+    <li><a href="portfolio.html">Portfolio</a></li>
     <li><a href="about.html">À propos</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
 </nav>
-<!-- PORTFOLIO -->
-<div class="secw" id="portfolio"><section>
-  <span class="slbl" id="txt-portfolio-label">Réalisations</span>
-  <h2 class="stit" id="txt-portfolio-title">Le <span>portfolio</span></h2>
-  <div class="pf" id="port-filter">
-    <button class="fb active" onclick="pfFilter('all',this)">Tout</button>
-    <button class="fb" onclick="pfFilter('vetement',this)">Vêtements</button>
-    <button class="fb" onclick="pfFilter('livery',this)">Livery</button>
-    <button class="fb" onclick="pfFilter('mapping',this)">Mapping</button>
-    <button class="fb" onclick="pfFilter('design',this)">Design</button>
+
+<div class="secw" id="shop-section"><section>
+  <span class="slbl">Nos créations en vente</span>
+  <h2 class="stit">La <span>boutique</span></h2>
+  <div class="pf" id="shop-filter"></div>
+  <div id="shop-loading" class="shop-loading">
+    <div class="shop-spinner"></div>
+    <p>Chargement des produits...</p>
   </div>
-  <div class="pg-photos" id="portfolio-grid">
-    <div class="pg-empty" id="port-empty">Aucune création pour l'instant — revenez bientôt !</div>
-  </div>
+  <div class="shop-grid" id="shop-grid"></div>
+  <div class="shop-empty" id="shop-empty" style="display:none">Aucun produit disponible pour le moment.</div>
 </section></div>
+
+<!-- PANIER FLOTTANT -->
+<div class="shop-cart" id="shop-cart" style="display:none">
+  <div class="shop-cart-header">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    <span>Panier</span>
+    <span class="shop-cart-badge" id="shop-cart-count">0</span>
+  </div>
+  <div class="shop-cart-items" id="shop-cart-items"></div>
+  <div class="shop-cart-total">
+    <span>Total</span>
+    <span id="shop-cart-total">0.00 €</span>
+  </div>
+  <button class="shop-cart-checkout" id="shop-checkout-btn" onclick="shopCheckout()">Payer</button>
+</div>
+
+<!-- TOGGLE PANIER MOBILE -->
+<button class="shop-cart-toggle" id="shop-cart-toggle" style="display:none" onclick="shopToggleCart()">
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+  <span class="shop-cart-toggle-badge" id="shop-cart-toggle-count">0</span>
+</button>
 
 <footer>
   <span class="flogo">Amarograph</span>
@@ -77,15 +95,12 @@
       <div class="adm-title" style="margin-bottom:0">Administration</div>
       <button class="adm-btn adm-btn-r" onclick="admLogout()">Déconnexion</button>
     </div>
-
     <div class="adm-tabs">
       <div class="adm-tab active" onclick="admTab('photos',this)">Photos portfolio</div>
       <div class="adm-tab" onclick="admTab('textes',this)">Textes du site</div>
       <div class="adm-tab" onclick="admTab('services',this)">Services</div>
       <div class="adm-tab" onclick="admTab('params',this)">Paramètres</div>
     </div>
-
-    <!-- TAB PHOTOS -->
     <div class="adm-tab-content active" id="atab-photos">
       <div style="display:flex;gap:.6rem;align-items:center;margin-bottom:.8rem;flex-wrap:wrap">
         <select id="adm-cat-new" class="adm-input" style="width:auto;flex:1">
@@ -103,60 +118,19 @@
       </div>
       <div class="adm-photos-grid" id="adm-photos-grid"></div>
     </div>
-
-    <!-- TAB TEXTES -->
-    <div class="adm-tab-content" id="atab-textes">
-      <div class="adm-section">
-        <div class="adm-label">Section Hero</div>
-        <label class="adm-label">Accroche</label>
-        <input type="text" class="adm-input" id="edit-eyebrow" oninput="liveEdit('txt-eyebrow',this.value)">
-        <label class="adm-label">Titre principal</label>
-        <input type="text" class="adm-input" id="edit-hero-title" oninput="liveEditArc('txt-hero-title',this.value)">
-        <label class="adm-label">Sous-titre</label>
-        <input type="text" class="adm-input" id="edit-hero-sub" oninput="liveEdit('txt-hero-sub',this.value)">
-      </div>
-      <div class="adm-section">
-        <div class="adm-label">Section À propos</div>
-        <label class="adm-label">Titre</label>
-        <input type="text" class="adm-input" id="edit-about-title" oninput="liveEditArc('txt-about-title',this.value)">
-        <label class="adm-label">Paragraphe 1</label>
-        <textarea class="adm-input" id="edit-about-p1" rows="3" oninput="liveEditP('about-p1',this.value)" style="resize:vertical"></textarea>
-        <label class="adm-label">Paragraphe 2</label>
-        <textarea class="adm-input" id="edit-about-p2" rows="3" oninput="liveEditP('about-p2',this.value)" style="resize:vertical"></textarea>
-        <label class="adm-label">Paragraphe 3</label>
-        <textarea class="adm-input" id="edit-about-p3" rows="3" oninput="liveEditP('about-p3',this.value)" style="resize:vertical"></textarea>
-      </div>
-      <div class="adm-section">
-        <div class="adm-label">Section Contact</div>
-        <label class="adm-label">Titre</label>
-        <input type="text" class="adm-input" id="edit-contact-title" oninput="liveEditArc('txt-contact-title',this.value)">
-        <label class="adm-label">Sous-titre</label>
-        <input type="text" class="adm-input" id="edit-contact-sub" oninput="liveEdit('txt-contact-sub',this.value)">
-      </div>
-      <div style="display:flex;gap:.6rem;margin-top:1rem">
-        <button class="adm-btn adm-btn-g" onclick="admSaveTexts()" style="flex:1">Sauvegarder textes</button>
-      </div>
-    </div>
-
-    <!-- TAB SERVICES -->
+    <div class="adm-tab-content" id="atab-textes"></div>
     <div class="adm-tab-content" id="atab-services">
       <div id="adm-services-list"></div>
       <button class="adm-btn adm-btn-g" onclick="admSaveServices()" style="margin-top:1rem">Sauvegarder services</button>
     </div>
-
-    <!-- TAB PARAMS -->
     <div class="adm-tab-content" id="atab-params">
       <div class="adm-section">
         <div class="adm-label">Discord Webhook</div>
-        <label class="adm-label">URL du Webhook (pour recevoir les messages du formulaire de contact)</label>
+        <label class="adm-label">URL du Webhook</label>
         <input type="text" class="adm-input" id="adm-webhook" placeholder="https://discord.com/api/webhooks/...">
-        <p style="font-family:'Quantum',sans-serif;font-size:.7rem;color:var(--muted);margin-top:.5rem;line-height:1.6">
-          Allez dans les paramètres de votre salon Discord → Intégrations → Webhooks → Nouveau webhook, puis copiez l'URL ici.
-        </p>
         <button class="adm-btn adm-btn-g" onclick="admSaveWebhook()" style="margin-top:1rem">Sauvegarder</button>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -175,8 +149,6 @@
   </div>
 </div>
 
-</body>
-</html>
 <script src="script.js"></script>
 </body>
 </html>
