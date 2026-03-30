@@ -20,8 +20,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9990;
 
 /* ── CANVASES BG ── */
 #hexbg{position:fixed;inset:0;z-index:0;pointer-events:none}
-#fl{position:fixed;top:0;left:0;z-index:1;pointer-events:none;width:110px}
-#fr{position:fixed;top:0;right:0;z-index:1;pointer-events:none;width:110px}
 
 /* ── NEON BORDER TOUR DE PAGE ── */
 #neon-border{

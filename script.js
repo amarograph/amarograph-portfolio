@@ -136,34 +136,7 @@ function drawHex(t){
   });
 }
 
-/* SIDE FLASH */
-const flc=document.getElementById('fl'),flx2=flc.getContext('2d');
-const frc=document.getElementById('fr'),frx2=frc.getContext('2d');
-let SH=window.innerHeight;
-function resizeFlash(){SH=window.innerHeight;flc.height=frc.height=SH;flc.style.height=frc.style.height=SH+'px';}
-window.addEventListener('resize',resizeFlash);resizeFlash();
-const beams=[
-  {side:'l',col:'0,170,255',y:.15,h:.12,sp:.14,ph:0,w:55},
-  {side:'l',col:'204,0,32',y:.55,h:.14,sp:.09,ph:2.1,w:40},
-  {side:'r',col:'204,0,32',y:.08,h:.11,sp:.16,ph:.9,w:58},
-  {side:'r',col:'0,170,255',y:.72,h:.13,sp:.11,ph:3.5,w:44},
-];
-let flashLastT=0;
-function drawFlash(ctx,side,t){
-  if(side==='r'&&t-flashLastT<50)return;
-  if(side==='r')flashLastT=t;
-  ctx.clearRect(0,0,110,SH);
-  beams.filter(b=>b.side===side).forEach(b=>{
-    const raw=(Math.sin(t*b.sp+b.ph)+1)/2,a=raw*raw;if(a<.02)return;
-    const cy=b.y*SH,bh=b.h*SH,x0=side==='l'?0:110;
-    const gr=ctx.createLinearGradient(x0,0,side==='l'?b.w:110-b.w,0);
-    gr.addColorStop(0,'rgba('+b.col+','+Math.min(a*.4,.4)+')');gr.addColorStop(1,'rgba('+b.col+',0)');
-    ctx.save();ctx.globalCompositeOperation='screen';ctx.fillStyle=gr;
-    ctx.fillRect(side==='l'?0:110-b.w,cy-bh/2,b.w,bh);ctx.restore();
-  });
-}
-
-window.addEventListener('resize',()=>{resize();resizeFlash();});
+window.addEventListener('resize',()=>{resize();});
 resize();
 
 /* ══ BOUCLE UNIQUE ══ */
@@ -177,8 +150,6 @@ function masterLoop(ts){
   drawHUD(angle);
   const t=ts*0.001;
   drawHex(t);
-  drawFlash(flx2,'l',t);
-  drawFlash(frx2,'r',t);
   requestAnimationFrame(masterLoop);
 }
 requestAnimationFrame(masterLoop);
