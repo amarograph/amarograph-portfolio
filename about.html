@@ -46,6 +46,48 @@
   </div>
   <span class="fr">© Amarograph 2025</span>
 </footer>
+<!-- CHAT WIDGET -->
+<div id="chat-bubble" onclick="chatToggle()" title="Nous contacter">
+  <div id="chat-notif"></div>
+  <svg viewBox="0 0 24 24" fill="none" stroke="#00AAFF" stroke-width="1.5">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <line x1="9" y1="10" x2="15" y2="10" stroke="#CC0020" stroke-width="1"/>
+    <line x1="9" y1="13" x2="13" y2="13" stroke="#00AAFF" stroke-width="1"/>
+  </svg>
+</div>
+
+<div id="chat-window">
+  <div class="chat-head">
+    <div class="chat-avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#00AAFF" stroke-width="1.5">
+        <polygon points="12,2 22,7 22,17 12,22 2,17 2,7"/>
+        <circle cx="12" cy="12" r="3" fill="rgba(0,170,255,.2)" stroke="#00AAFF" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="chat-head-info">
+      <div class="chat-head-name">Amarograph</div>
+      <div class="chat-head-status">En ligne &mdash; repond vite</div>
+    </div>
+    <button class="chat-close" onclick="chatToggle()">&times;</button>
+  </div>
+  <div class="chat-msgs" id="chat-msgs">
+    <div class="chat-msg bot">Salut ! Decris-moi ton projet et je te reponds rapidement.</div>
+    <div class="chat-typing" id="chat-typing"><span></span><span></span><span></span></div>
+  </div>
+  <div class="chat-name-row">
+    <input type="text" id="chat-pseudo" placeholder="Ton pseudo / Discord (ex: pseudo#0000)" maxlength="60">
+  </div>
+  <div class="chat-foot">
+    <textarea id="chat-input" placeholder="Ton message..." rows="1"
+      oninput="this.style.height='38px';this.style.height=this.scrollHeight+'px'"></textarea>
+    <button class="chat-send" onclick="chatSend()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
 <!-- ADMIN BTN -->
 <div id="admin-btn" onclick="admOpen()" title="Admin">
   <svg viewBox="0 0 24 24" fill="none" stroke="#00AAFF" stroke-width="1.5">

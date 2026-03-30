@@ -987,3 +987,136 @@ function shopCheckout() {
     alert('Erreur : impossible de trouver le lien de paiement.');
   }
 }
+
+/* ══════════════════════════════════
+   CHAT WIDGET
+══════════════════════════════════ */
+let chatOpen = false;
+let chatSent = false;
+
+function chatToggle() {
+  const win = document.getElementById('chat-window');
+  chatOpen = !chatOpen;
+  win.classList.toggle('open', chatOpen);
+  if (chatOpen) {
+    document.getElementById('chat-notif').style.display = 'none';
+    setTimeout(() => {
+      const inp = document.getElementById('chat-pseudo');
+      if (inp && !inp.value) inp.focus();
+      else {
+        const ta = document.getElementById('chat-input');
+        if (ta) ta.focus();
+      }
+    }, 250);
+  }
+}
+
+function chatAddMsg(text, type) {
+  const msgs = document.getElementById('chat-msgs');
+  const typing = document.getElementById('chat-typing');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  div.textContent = text;
+  msgs.insertBefore(div, typing);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function chatShowTyping(show) {
+  const t = document.getElementById('chat-typing');
+  if (t) t.style.display = show ? 'flex' : 'none';
+}
+
+function chatSend() {
+  const pseudo = (document.getElementById('chat-pseudo')?.value || '').trim();
+  const ta = document.getElementById('chat-input');
+  const msg = (ta?.value || '').trim();
+
+  if (!pseudo) {
+    document.getElementById('chat-pseudo').focus();
+    document.getElementById('chat-pseudo').style.borderColor = 'var(--r)';
+    setTimeout(() => { document.getElementById('chat-pseudo').style.borderColor = ''; }, 1500);
+    return;
+  }
+  if (!msg) {
+    ta.focus();
+    return;
+  }
+  if (chatSent) {
+    chatAddMsg('Message déjà envoyé ! Je te réponds rapidement sur Discord.', 'bot');
+    return;
+  }
+
+  // Affiche le message de l'utilisateur
+  chatAddMsg(msg, 'user');
+  ta.value = '';
+  ta.style.height = '38px';
+
+  // Animation typing
+  chatShowTyping(true);
+  document.getElementById('chat-msgs').scrollTop = 999999;
+
+  // Envoi via webhook Discord
+  const d = admGetData();
+  const webhookUrl = d.webhook || '';
+
+  if (!webhookUrl) {
+    setTimeout(() => {
+      chatShowTyping(false);
+      chatAddMsg("Configure d'abord un webhook Discord dans le panneau admin !", 'bot');
+    }, 800);
+    return;
+  }
+
+  const page = window.location.pathname.split('/').pop() || 'index.html';
+
+  fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      embeds: [{
+        title: '💬 Nouveau message chat — ' + pseudo,
+        color: 43775,
+        fields: [
+          { name: 'Pseudo', value: pseudo, inline: true },
+          { name: 'Page', value: page, inline: true },
+          { name: 'Message', value: msg }
+        ],
+        footer: { text: 'Amarograph Chat · ' + new Date().toLocaleString('fr-FR') }
+      }]
+    })
+  })
+  .then(r => {
+    chatShowTyping(false);
+    if (r.ok) {
+      chatSent = true;
+      chatAddMsg("Message reçu ! Je te réponds rapidement sur Discord 🎮", 'bot');
+    } else {
+      chatAddMsg("Erreur d'envoi. Essaie le formulaire de contact !", 'bot');
+    }
+  })
+  .catch(() => {
+    chatShowTyping(false);
+    chatAddMsg("Erreur réseau. Essaie le formulaire de contact !", 'bot');
+  });
+}
+
+// Enter dans le champ pseudo → focus textarea
+document.addEventListener('DOMContentLoaded', () => {
+  const pseudo = document.getElementById('chat-pseudo');
+  if (pseudo) {
+    pseudo.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('chat-input')?.focus();
+      }
+    });
+  }
+  // Afficher la bulle avec une légère animation
+  const bubble = document.getElementById('chat-bubble');
+  if (bubble) {
+    setTimeout(() => {
+      bubble.style.transform = 'scale(1.08)';
+      setTimeout(() => { bubble.style.transform = ''; }, 300);
+    }, 2000);
+  }
+});
