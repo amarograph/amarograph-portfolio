@@ -468,3 +468,60 @@ footer{background:rgba(4,6,10,.85);padding:2rem 3rem;display:flex;align-items:ce
   padding:.45rem .7rem;transition:all .2s;flex-shrink:0;border-radius:2px}
 .chat-send:hover{border-color:var(--b);box-shadow:0 0 12px rgba(0,170,255,.2)}
 .chat-send svg{width:16px;height:16px;display:block}
+
+/* ══════════════════════════════════
+   PAGE CONTACT — DIALOGUE PLEIN ECRAN
+══════════════════════════════════ */
+.contact-page-wrap{display:flex;min-height:calc(100vh - 60px);align-items:stretch;position:relative;z-index:2}
+.contact-page-left{flex:0 0 420px;padding:5rem 3rem 3rem;display:flex;flex-direction:column;gap:2rem;
+  border-right:1px solid rgba(0,170,255,.1)}
+.contact-page-right{flex:1;display:flex;align-items:center;justify-content:center;padding:3rem 2rem}
+
+.cp-brand{display:flex;align-items:center;gap:.8rem}
+.cp-brand span{font-family:'Arc',sans-serif;font-size:1.1rem;letter-spacing:.3em;
+  background:linear-gradient(90deg,var(--b),var(--r));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+.cp-title{font-family:'Arc',sans-serif;font-size:clamp(2rem,4vw,3rem);letter-spacing:.15em;line-height:1.2;
+  color:var(--text);text-transform:uppercase}
+.cp-title span{background:linear-gradient(90deg,var(--b),var(--r));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.cp-sub{font-family:'Quantum',sans-serif;font-size:.85rem;color:var(--muted);line-height:1.8}
+
+.cp-infos{display:flex;flex-direction:column;gap:1rem;margin-top:auto}
+.cp-info-item{display:flex;align-items:center;gap:.8rem;
+  font-family:'Quantum',sans-serif;font-size:.78rem;letter-spacing:.1em;color:var(--muted)}
+
+.cp-chat{width:100%;max-width:520px;background:rgba(4,6,10,.95);
+  border:1px solid rgba(0,170,255,.18);
+  clip-path:polygon(14px 0%,100% 0%,calc(100% - 14px) 100%,0% 100%);
+  display:flex;flex-direction:column;
+  box-shadow:0 0 60px rgba(0,0,0,.5),0 0 30px rgba(0,170,255,.04)}
+
+.cp-chat-head{padding:1.2rem 1.5rem;display:flex;align-items:center;gap:1rem;
+  border-bottom:1px solid rgba(0,170,255,.12)}
+
+.cp-chat-msgs{height:280px;overflow-y:auto;padding:1rem 1.2rem;
+  display:flex;flex-direction:column;gap:.7rem;scroll-behavior:smooth}
+.cp-chat-msgs::-webkit-scrollbar{width:3px}
+.cp-chat-msgs::-webkit-scrollbar-thumb{background:rgba(0,170,255,.2)}
+
+.cp-chat-form{padding:.8rem 1.2rem 1.2rem;display:flex;flex-direction:column;gap:.6rem;
+  border-top:1px solid rgba(0,170,255,.1)}
+.cp-chat-form input{background:rgba(255,255,255,.03);border:1px solid rgba(0,170,255,.15);
+  color:var(--text);font-family:'Quantum',sans-serif;font-size:.78rem;padding:.55rem .9rem;
+  outline:none;transition:border-color .2s;border-radius:2px}
+.cp-chat-form input:focus{border-color:var(--b)}
+.cp-msg-row{display:flex;gap:.5rem;align-items:flex-end}
+.cp-msg-row textarea{flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(0,170,255,.15);
+  color:var(--text);font-family:'Quantum',sans-serif;font-size:.78rem;padding:.55rem .9rem;
+  outline:none;resize:none;height:42px;max-height:120px;line-height:1.5;
+  transition:border-color .2s;border-radius:2px}
+.cp-msg-row textarea:focus{border-color:var(--b)}
+.cp-hint{font-family:'Quantum',sans-serif;font-size:.65rem;color:rgba(200,210,230,.25);text-align:center}
+.cp-hint kbd{background:rgba(0,170,255,.1);border:1px solid rgba(0,170,255,.2);
+  padding:.1rem .3rem;border-radius:2px;font-family:inherit}
+
+@media(max-width:768px){
+  .contact-page-wrap{flex-direction:column}
+  .contact-page-left{flex:none;padding:2rem 1.5rem 1.5rem;border-right:none;border-bottom:1px solid rgba(0,170,255,.1)}
+  .contact-page-right{padding:1.5rem}
+}

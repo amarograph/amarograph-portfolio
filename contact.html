@@ -22,24 +22,68 @@
     <li><a href="contact.html" class="active">Contact</a></li>
   </ul>
 </nav>
-<!-- CONTACT -->
-<div class="secw" id="cbg"><div id="contact">
-<div class="ci">
-  <span class="slbl">Passez commande</span>
-  <h2 class="stit" id="txt-contact-title" style="margin-bottom:.6rem">Lancer un <span>projet</span></h2>
-  <p style="font-family:'Quantum',sans-serif;font-size:.85rem;color:var(--muted);line-height:1.8">Décrivez votre besoin, je vous réponds rapidement avec un devis sur mesure.</p>
-  <form class="cf" onsubmit="fs(event)">
-    <div class="fr2">
-      <input type="text" placeholder="Votre pseudo / nom" required>
-      <input type="text" placeholder="Serveur FiveM (si applicable)">
+<!-- CONTACT PAGE — DIALOGUE PLEIN ECRAN -->
+<div class="contact-page-wrap">
+  <div class="contact-page-left">
+    <div class="cp-brand">
+      <svg viewBox="0 0 48 48" width="48" height="48">
+        <polygon points="24,2 44,13 44,35 24,46 4,35 4,13" fill="rgba(0,170,255,.06)" stroke="#00AAFF" stroke-width="1"/>
+        <circle cx="24" cy="24" r="6" fill="rgba(0,170,255,.15)" stroke="#00AAFF" stroke-width="1"/>
+      </svg>
+      <span>Amarograph</span>
     </div>
-    <input type="email" placeholder="Email ou Discord (ex: pseudo#0000)">
-    <select><option value="" disabled selected>Type de création</option><option>Vêtement EUP / FiveM</option><option>Livery véhicule</option><option>Retexturation mapping</option><option>Design graphique / Logo</option><option>Pack complet serveur</option><option>Autre</option></select>
-    <textarea placeholder="Décrivez votre projet : style, couleurs, références, délai..."></textarea>
-    <button type="submit" class="fsub">Envoyer la demande</button>
-  </form>
+    <h1 class="cp-title">Commençons<br><span>à discuter</span></h1>
+    <p class="cp-sub">Décris ton projet, je te réponds rapidement avec un devis sur mesure.</p>
+    <div class="cp-infos">
+      <div class="cp-info-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#00AAFF" stroke-width="1.5" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Réponse sous 24h</span>
+      </div>
+      <div class="cp-info-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#CC0020" stroke-width="1.5" width="18" height="18"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"/></svg>
+        <span>Spécialiste FiveM &amp; GTA V</span>
+      </div>
+      <div class="cp-info-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#00AAFF" stroke-width="1.5" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Devis gratuit &amp; sans engagement</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-page-right">
+    <div class="cp-chat">
+      <div class="cp-chat-head">
+        <div class="chat-avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#00AAFF" stroke-width="1.5">
+            <polygon points="12,2 22,7 22,17 12,22 2,17 2,7"/>
+            <circle cx="12" cy="12" r="3" fill="rgba(0,170,255,.2)" stroke="#00AAFF" stroke-width="1"/>
+          </svg>
+        </div>
+        <div>
+          <div class="chat-head-name">Amarograph</div>
+          <div class="chat-head-status">En ligne &mdash; répond vite</div>
+        </div>
+      </div>
+      <div class="cp-chat-msgs" id="cp-msgs">
+        <div class="chat-msg bot">Salut ! 👋 Décris-moi ton projet et je te réponds rapidement avec un devis.</div>
+        <div class="chat-typing" id="cp-typing"><span></span><span></span><span></span></div>
+      </div>
+      <div class="cp-chat-form">
+        <input type="text" id="cp-pseudo" placeholder="Ton pseudo / Discord (ex: pseudo#0000)" maxlength="60">
+        <div class="cp-msg-row">
+          <textarea id="cp-input" placeholder="Ton message..." rows="1"
+            oninput="this.style.height='42px';this.style.height=this.scrollHeight+'px'"></textarea>
+          <button class="chat-send" onclick="cpSend()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <p class="cp-hint">Appuie sur <kbd>Entrée</kbd> pour envoyer</p>
+      </div>
+    </div>
+  </div>
 </div>
-</div></div>
 
 <footer>
   <span class="flogo">Amarograph</span>

@@ -1011,3 +1011,100 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 })();
+
+/* ══════════════════════════════════
+   PAGE CONTACT — CHAT PLEIN ECRAN
+══════════════════════════════════ */
+let cpSent = false;
+
+function cpAddMsg(text, type) {
+  const msgs = document.getElementById('cp-msgs');
+  if (!msgs) return;
+  const typing = document.getElementById('cp-typing');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  div.textContent = text;
+  msgs.insertBefore(div, typing);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function cpShowTyping(show) {
+  const t = document.getElementById('cp-typing');
+  if (t) t.style.display = show ? 'flex' : 'none';
+}
+
+function cpSend() {
+  const pseudo = (document.getElementById('cp-pseudo')?.value || '').trim();
+  const ta = document.getElementById('cp-input');
+  const msg = (ta?.value || '').trim();
+
+  if (!pseudo) {
+    document.getElementById('cp-pseudo').focus();
+    document.getElementById('cp-pseudo').style.borderColor = 'var(--r)';
+    setTimeout(() => { document.getElementById('cp-pseudo').style.borderColor = ''; }, 1500);
+    return;
+  }
+  if (!msg) { ta?.focus(); return; }
+  if (cpSent) { cpAddMsg('Message déjà envoyé ! Je te réponds rapidement sur Discord 🎮', 'bot'); return; }
+
+  cpAddMsg(msg, 'user');
+  ta.value = ''; ta.style.height = '42px';
+  cpShowTyping(true);
+  document.getElementById('cp-msgs').scrollTop = 999999;
+
+  const d = admGetData();
+  const webhookUrl = d.webhook || '';
+  if (!webhookUrl) {
+    setTimeout(() => {
+      cpShowTyping(false);
+      cpAddMsg("Configure d'abord un webhook Discord dans le panneau admin !", 'bot');
+    }, 800);
+    return;
+  }
+
+  fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      embeds: [{
+        title: '🎫 Nouveau ticket — ' + pseudo,
+        color: 43775,
+        fields: [
+          { name: 'Pseudo', value: pseudo, inline: true },
+          { name: 'Page', value: 'contact.html', inline: true },
+          { name: 'Message', value: msg }
+        ],
+        footer: { text: 'Amarograph Contact • ' + new Date().toLocaleString('fr-FR') }
+      }]
+    })
+  })
+  .then(r => {
+    cpShowTyping(false);
+    if (r.ok) {
+      cpSent = true;
+      cpAddMsg("Message reçu ! 🚀 Un ticket va être créé. Je te réponds rapidement sur Discord.", 'bot');
+    } else {
+      cpAddMsg("Erreur d'envoi. Réessaie ou contacte-moi directement sur Discord.", 'bot');
+    }
+  })
+  .catch(() => {
+    cpShowTyping(false);
+    cpAddMsg("Erreur réseau. Réessaie dans quelques instants.", 'bot');
+  });
+}
+
+/* Enter pour envoyer dans la page contact */
+document.addEventListener('DOMContentLoaded', () => {
+  const cpInput = document.getElementById('cp-input');
+  if (cpInput) {
+    cpInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cpSend(); }
+    });
+  }
+  const cpPseudo = document.getElementById('cp-pseudo');
+  if (cpPseudo) {
+    cpPseudo.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('cp-input')?.focus(); }
+    });
+  }
+});
