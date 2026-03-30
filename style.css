@@ -238,11 +238,13 @@ footer{background:rgba(4,6,10,.85);padding:2rem 3rem;display:flex;align-items:ce
 .shop-card-img-placeholder svg{width:40px;height:40px;opacity:.3}
 
 /* ── ADMIN ── */
-#admin-btn{position:fixed;bottom:1.5rem;right:1.5rem;z-index:200;
+#admin-btn{position:fixed;bottom:1.5rem;left:1.5rem;z-index:200;
   width:42px;height:42px;border-radius:50%;
-  background:rgba(6,8,14,.9);border:1px solid rgba(0,170,255,.3);
+  background:rgba(6,8,14,.9);border:1px solid rgba(0,170,255,.15);
   display:flex;align-items:center;justify-content:center;cursor:none;
-  transition:all .2s}
+  transition:all .3s;
+  opacity:0;pointer-events:none}
+#admin-btn.visible{opacity:1;pointer-events:all}
 #admin-btn:hover{border-color:var(--b);box-shadow:0 0 16px rgba(0,170,255,.3)}
 #admin-btn svg{width:18px;height:18px}
 

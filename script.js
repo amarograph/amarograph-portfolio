@@ -1120,3 +1120,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2000);
   }
 });
+
+/* ══════════════════════════════════
+   ADMIN BTN — ACCES SECRET (Ctrl+Shift+A)
+══════════════════════════════════ */
+(function(){
+  let seq = [];
+  const CODE = ['Control','Shift','A'];
+  document.addEventListener('keydown', e => {
+    seq.push(e.key === 'A' ? 'A' : e.key);
+    if (seq.length > 3) seq.shift();
+    if (seq.join(',') === CODE.join(',')) {
+      const btn = document.getElementById('admin-btn');
+      if (!btn) return;
+      const visible = btn.classList.toggle('visible');
+      if (visible) {
+        setTimeout(() => {
+          btn.classList.remove('visible');
+        }, 8000); // disparait apres 8s si pas cliqué
+      }
+    }
+  });
+})();
