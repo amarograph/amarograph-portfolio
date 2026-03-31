@@ -211,6 +211,14 @@ function chatToggle() {
   const win = document.getElementById('chat-window');
   chatOpen = !chatOpen;
   win.classList.toggle('open', chatOpen);
+  if (!chatOpen) {
+    // Ferme aussi la modale si active
+    const overlay = document.getElementById('chat-overlay');
+    if (overlay && overlay.classList.contains('active')) {
+      overlay.classList.remove('active');
+      setTimeout(() => win.classList.remove('chat-modal'), 300);
+    }
+  }
   if (chatOpen) {
     document.getElementById('chat-notif').style.display = 'none';
     if (!chatCategory) {
@@ -223,6 +231,22 @@ function chatToggle() {
       }, 250);
     }
   }
+}
+
+function contactOpen() {
+  const win = document.getElementById('chat-window');
+  const overlay = document.getElementById('chat-overlay');
+  if (win) win.classList.add('chat-modal');
+  if (overlay) overlay.classList.add('active');
+  if (!chatOpen) chatToggle();
+}
+
+function contactClose() {
+  const win = document.getElementById('chat-window');
+  const overlay = document.getElementById('chat-overlay');
+  if (chatOpen) chatToggle();
+  if (overlay) overlay.classList.remove('active');
+  setTimeout(() => { if (win) win.classList.remove('chat-modal'); }, 300);
 }
 
 function chatInjectChoices() {

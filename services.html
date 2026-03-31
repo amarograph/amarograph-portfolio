@@ -19,7 +19,7 @@
     <li><a href="portfolio.html">Portfolio</a></li>
     <li><a href="boutique.html">Boutique</a></li>
     <li><a href="about.html">À propos</a></li>
-    <li><a href="#" onclick="chatToggle();return false;">Contact</a></li>
+    <li><a href="#" onclick="contactOpen();return false;">Contact</a></li>
   </ul>
 </nav>
 <!-- SERVICES -->
@@ -60,6 +60,7 @@
   <span class="fr">© Amarograph 2025</span>
 </footer>
 <!-- CHAT WIDGET -->
+<div class="chat-overlay" id="chat-overlay" onclick="contactClose()"></div>
 <div id="chat-bubble" onclick="chatToggle()" title="Nous contacter">
   <div id="chat-notif"></div>
   <svg viewBox="0 0 24 24" fill="none" stroke="#00AAFF" stroke-width="1.5">

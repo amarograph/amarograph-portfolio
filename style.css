@@ -392,6 +392,24 @@ footer{background:rgba(4,6,10,.85);padding:2rem 3rem;display:flex;align-items:ce
 .chat-send:hover{border-color:var(--b);box-shadow:0 0 12px rgba(0,170,255,.2)}
 .chat-send svg{width:16px;height:16px;display:block}
 
+/* ── CONTACT MODAL (grande bulle centrée) ── */
+#chat-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);
+  z-index:9990;display:none;cursor:none}
+#chat-overlay.active{display:block}
+#chat-window.chat-modal{
+  position:fixed!important;bottom:auto!important;right:auto!important;
+  top:50%!important;left:50%!important;
+  transform:translate(-50%,-50%) scale(0.95)!important;
+  opacity:0!important;pointer-events:none!important;
+  width:min(620px,95vw)!important;z-index:9995!important;transition:all .3s cubic-bezier(.25,.46,.45,.94)!important}
+#chat-window.chat-modal.open{
+  transform:translate(-50%,-50%) scale(1)!important;
+  opacity:1!important;pointer-events:all!important}
+#chat-window.chat-modal .chat-msgs{height:300px!important}
+#chat-window.chat-modal .chat-head{padding:1rem 1.2rem!important}
+#chat-window.chat-modal .chat-foot{padding:.8rem 1.2rem 1rem!important}
+#chat-window.chat-modal .chat-name-row{padding:.5rem 1.2rem!important}
+
 /* ══════════════════════════════════
    PAGE CONTACT — DIALOGUE PLEIN ECRAN
 ══════════════════════════════════ */
