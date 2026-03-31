@@ -168,7 +168,7 @@ let cpCategory = null;
 //  Laisse vide si tu n'as pas encore l'URL (les réponses Discord n'apparaîtront
 //  pas dans le chat, mais les messages seront quand même envoyés).
 // ──────────────────────────────────────────────────────────────────────────────
-const RAILWAY_URL = '';
+const RAILWAY_URL = 'https://amarograph-bot-production.up.railway.app';
 
 // Session unique par onglet/visiteur (pour relier le chat au bon channel Discord)
 let chatSessionId = sessionStorage.getItem('ama_sess') || null;
