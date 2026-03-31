@@ -162,6 +162,45 @@ let chatSent = false;
 let chatCategory = null;
 let cpCategory = null;
 
+// ──────────────────────────────────────────────────────────────────────────────
+//  ⚠️  RAILWAY_URL : URL publique de ton bot sur Railway
+//  Exemple : 'https://amarograph-bot-production.up.railway.app'
+//  Laisse vide si tu n'as pas encore l'URL (les réponses Discord n'apparaîtront
+//  pas dans le chat, mais les messages seront quand même envoyés).
+// ──────────────────────────────────────────────────────────────────────────────
+const RAILWAY_URL = '';
+
+// Session unique par onglet/visiteur (pour relier le chat au bon channel Discord)
+let chatSessionId = sessionStorage.getItem('ama_sess') || null;
+if (!chatSessionId) {
+  chatSessionId = 'ama_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-5);
+  sessionStorage.setItem('ama_sess', chatSessionId);
+}
+
+let chatPollInterval = null;
+let cpPollInterval = null;
+
+function startPolling(addMsgFn, showTypingFn, intervalRef) {
+  if (!RAILWAY_URL) return null;
+  return setInterval(async () => {
+    try {
+      const r = await fetch(`${RAILWAY_URL}/replies?session=${chatSessionId}`);
+      if (!r.ok) return;
+      const { replies } = await r.json();
+      if (!replies || !replies.length) return;
+      replies.forEach((rep, i) => {
+        setTimeout(() => {
+          showTypingFn(true);
+          setTimeout(() => {
+            showTypingFn(false);
+            addMsgFn('💬 ' + rep.author + ' : ' + rep.content, 'bot');
+          }, 700);
+        }, i * 900);
+      });
+    } catch (e) { /* réseau indisponible, on réessaie au prochain tick */ }
+  }, 5000);
+}
+
 const CHAT_CATEGORIES = [
   { label: 'Achat eup',         id: '1488313291569627197', emoji: '🛒' },
   { label: 'Questions / Aides', id: '1488313391469822002', emoji: '❓' },
@@ -283,6 +322,7 @@ function chatSend() {
           { name: 'Page', value: page, inline: true },
           { name: 'Catégorie', value: chatCategory ? chatCategory.emoji + ' ' + chatCategory.label : 'Non sélectionnée', inline: true },
           { name: 'Category ID', value: chatCategory ? chatCategory.id : '', inline: false },
+          { name: 'Session ID', value: chatSessionId, inline: false },
           { name: 'Message', value: msg }
         ],
         footer: { text: 'Amarograph Chat · ' + new Date().toLocaleString('fr-FR') }
@@ -293,7 +333,12 @@ function chatSend() {
     chatShowTyping(false);
     if (r.ok) {
       chatSent = true;
-      chatAddMsg("Message reçu ! Je te réponds rapidement sur Discord 🎮", 'bot');
+      if (RAILWAY_URL) {
+        chatAddMsg("Message envoyé ✅ Je te réponds directement ici dès que possible 👇", 'bot');
+        chatPollInterval = startPolling(chatAddMsg, chatShowTyping, chatPollInterval);
+      } else {
+        chatAddMsg("Message reçu ! Je te réponds rapidement sur Discord 🎮", 'bot');
+      }
     } else {
       chatAddMsg("Erreur d'envoi. Essaie le formulaire de contact !", 'bot');
     }
@@ -418,6 +463,7 @@ function cpSend() {
           { name: 'Page', value: 'contact.html', inline: true },
           { name: 'Catégorie', value: cpCategory ? cpCategory.emoji + ' ' + cpCategory.label : 'Non sélectionnée', inline: true },
           { name: 'Category ID', value: cpCategory ? cpCategory.id : '', inline: false },
+          { name: 'Session ID', value: chatSessionId, inline: false },
           { name: 'Message', value: msg }
         ],
         footer: { text: 'Amarograph Contact • ' + new Date().toLocaleString('fr-FR') }
@@ -428,7 +474,12 @@ function cpSend() {
     cpShowTyping(false);
     if (r.ok) {
       cpSent = true;
-      cpAddMsg("Message reçu ! 🚀 Un ticket va être créé. Je te réponds rapidement sur Discord.", 'bot');
+      if (RAILWAY_URL) {
+        cpAddMsg("Message envoyé ✅ Je te réponds directement ici dès que possible 👇", 'bot');
+        cpPollInterval = startPolling(cpAddMsg, cpShowTyping, cpPollInterval);
+      } else {
+        cpAddMsg("Message reçu ! 🚀 Un ticket va être créé. Je te réponds rapidement sur Discord.", 'bot');
+      }
     } else {
       cpAddMsg("Erreur d'envoi. Réessaie ou contacte-moi directement sur Discord.", 'bot');
     }
