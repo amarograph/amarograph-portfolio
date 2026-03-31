@@ -222,7 +222,7 @@ function chatSend() {
   document.getElementById('chat-msgs').scrollTop = 999999;
 
   // Envoi via webhook Discord
-  const webhookUrl = localStorage.getItem('amaro_webhook') || '';
+  const webhookUrl = 'https://discord.com/api/webhooks/1488328029116563598/GtoFdDdZDtAkQ2KFeBeyIDOfq66misxRs1CnLGyizuJOygZ1Lz_6YNgslh2futQYd_xD';
 
   if (!webhookUrl) {
     setTimeout(() => {
@@ -326,7 +326,7 @@ function cpSend() {
   cpShowTyping(true);
   document.getElementById('cp-msgs').scrollTop = 999999;
 
-  const webhookUrl = localStorage.getItem('amaro_webhook') || '';
+  const webhookUrl = 'https://discord.com/api/webhooks/1488328029116563598/GtoFdDdZDtAkQ2KFeBeyIDOfq66misxRs1CnLGyizuJOygZ1Lz_6YNgslh2futQYd_xD';
   if (!webhookUrl) {
     setTimeout(() => {
       cpShowTyping(false);
