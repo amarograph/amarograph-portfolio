@@ -991,22 +991,36 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ══════════════════════════════════
-   ADMIN BTN — ACCES SECRET (Ctrl+Shift+A)
+   ADMIN BTN — ACCES SECRET (5 clics sur le logo)
 ══════════════════════════════════ */
 (function(){
-  let seq = [];
-  const CODE = ['Control','Shift','A'];
+  let clickCount = 0, clickTimer = null;
+  document.addEventListener('DOMContentLoaded', () => {
+    const logo = document.querySelector('.logo');
+    if (!logo) return;
+    logo.addEventListener('click', () => {
+      clickCount++;
+      clearTimeout(clickTimer);
+      clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+      if (clickCount >= 5) {
+        clickCount = 0;
+        const btn = document.getElementById('admin-btn');
+        if (!btn) return;
+        const visible = btn.classList.toggle('visible');
+        if (visible) {
+          setTimeout(() => { btn.classList.remove('visible'); }, 8000);
+        }
+      }
+    });
+  });
+  // Garde aussi le raccourci clavier (touche F2)
   document.addEventListener('keydown', e => {
-    seq.push(e.key === 'A' ? 'A' : e.key);
-    if (seq.length > 3) seq.shift();
-    if (seq.join(',') === CODE.join(',')) {
+    if (e.key === 'F2') {
       const btn = document.getElementById('admin-btn');
       if (!btn) return;
       const visible = btn.classList.toggle('visible');
       if (visible) {
-        setTimeout(() => {
-          btn.classList.remove('visible');
-        }, 8000); // disparait apres 8s si pas cliqué
+        setTimeout(() => { btn.classList.remove('visible'); }, 8000);
       }
     }
   });
