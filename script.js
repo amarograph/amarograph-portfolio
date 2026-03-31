@@ -381,3 +381,282 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+/* ══════════════════════════════════
+   LIGHTBOX
+══════════════════════════════════ */
+let lbItems = [], lbIndex = 0;
+
+function lbOpen(items, index) {
+  lbItems = items;
+  lbIndex = index;
+  const lb = document.getElementById('lightbox');
+  if (!lb) return;
+  lb.classList.add('open');
+  lbShow();
+  document.addEventListener('keydown', lbKey);
+}
+
+function lbClose() {
+  const lb = document.getElementById('lightbox');
+  if (lb) lb.classList.remove('open');
+  document.removeEventListener('keydown', lbKey);
+}
+
+function lbNav(dir) {
+  if (!lbItems.length) return;
+  lbIndex = (lbIndex + dir + lbItems.length) % lbItems.length;
+  lbShow();
+}
+
+function lbShow() {
+  const img = document.getElementById('lb-img');
+  const counter = document.getElementById('lb-counter');
+  const name = document.getElementById('lb-name');
+  const desc = document.getElementById('lb-desc');
+  const item = lbItems[lbIndex] || {};
+  if (img) img.src = item.src || '';
+  if (counter) counter.textContent = (lbIndex + 1) + ' / ' + lbItems.length;
+  if (name) name.textContent = item.name || '';
+  if (desc) desc.textContent = item.desc || '';
+}
+
+function lbKey(e) {
+  if (e.key === 'ArrowLeft') lbNav(-1);
+  else if (e.key === 'ArrowRight') lbNav(1);
+  else if (e.key === 'Escape') lbClose();
+}
+
+/* Fermer lightbox en cliquant en dehors */
+document.addEventListener('DOMContentLoaded', () => {
+  const lb = document.getElementById('lightbox');
+  if (lb) {
+    lb.addEventListener('click', e => {
+      if (e.target === lb) lbClose();
+    });
+  }
+});
+
+/* ══════════════════════════════════
+   PORTFOLIO — FILTRE
+══════════════════════════════════ */
+function pfFilter(cat, btn) {
+  document.querySelectorAll('#port-filter .fb').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.pg-photo').forEach(el => {
+    el.style.display = (cat === 'all' || el.dataset.cat === cat) ? '' : 'none';
+  });
+  const empty = document.getElementById('port-empty');
+  if (empty) {
+    const visible = [...document.querySelectorAll('.pg-photo')].filter(el => el.style.display !== 'none').length;
+    empty.style.display = visible ? 'none' : 'block';
+  }
+}
+
+/* ══════════════════════════════════
+   BOUTIQUE — TEBEX HEADLESS API
+   ⚠️  Remplace TEBEX_TOKEN par ton
+   token public (Dashboard Tebex →
+   Webstore → Headless API → Token)
+══════════════════════════════════ */
+const TEBEX_TOKEN = '';
+const TEBEX_BASE = 'https://headless.tebex.io/api';
+
+let shopBasket = null;
+let shopCart = [];
+let shopAllProducts = [];
+
+function shopInit() {
+  if (!document.getElementById('shop-grid')) return;
+  if (!TEBEX_TOKEN) {
+    document.getElementById('shop-loading').style.display = 'none';
+    const empty = document.getElementById('shop-empty');
+    if (empty) {
+      empty.style.display = 'block';
+      empty.textContent = 'Boutique non configurée — ajoute ton token Tebex dans script.js';
+    }
+    return;
+  }
+  shopFetchProducts();
+}
+
+async function shopFetchProducts() {
+  try {
+    const res = await fetch(`${TEBEX_BASE}/accounts/${TEBEX_TOKEN}/categories?includePackages=1`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const categories = data.data || [];
+
+    shopAllProducts = [];
+    categories.forEach(cat => {
+      (cat.packages || []).forEach(pkg => {
+        shopAllProducts.push({
+          id: pkg.id,
+          name: pkg.name,
+          description: pkg.description || '',
+          price: pkg.base_price,
+          currency: pkg.currency || 'EUR',
+          image: pkg.image || null,
+          category: cat.name,
+          categoryId: cat.id
+        });
+      });
+    });
+
+    shopBuildFilters(categories);
+
+    document.getElementById('shop-loading').style.display = 'none';
+    shopRender('all');
+  } catch (err) {
+    console.error('Tebex API error:', err);
+    document.getElementById('shop-loading').style.display = 'none';
+    const empty = document.getElementById('shop-empty');
+    if (empty) { empty.style.display = 'block'; empty.textContent = 'Erreur de chargement des produits.'; }
+  }
+}
+
+function shopBuildFilters(categories) {
+  const pf = document.getElementById('shop-filter');
+  if (!pf) return;
+  pf.innerHTML = '';
+  const btnAll = document.createElement('button');
+  btnAll.className = 'fb active';
+  btnAll.textContent = 'Tout';
+  btnAll.onclick = () => shopFilter('all', btnAll);
+  pf.appendChild(btnAll);
+  categories.forEach(cat => {
+    if (!(cat.packages || []).length) return;
+    const btn = document.createElement('button');
+    btn.className = 'fb';
+    btn.textContent = cat.name;
+    btn.onclick = () => shopFilter(cat.id, btn);
+    pf.appendChild(btn);
+  });
+}
+
+function shopFilter(catId, btn) {
+  document.querySelectorAll('#shop-filter .fb').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  shopRender(catId);
+}
+
+function shopRender(catId) {
+  const grid = document.getElementById('shop-grid');
+  const empty = document.getElementById('shop-empty');
+  if (!grid) return;
+  const filtered = catId === 'all'
+    ? shopAllProducts
+    : shopAllProducts.filter(p => p.categoryId == catId);
+  if (!filtered.length) {
+    grid.innerHTML = '';
+    if (empty) { empty.style.display = 'block'; empty.textContent = 'Aucun produit dans cette catégorie.'; }
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  grid.innerHTML = filtered.map(p => {
+    const inCart = shopCart.some(c => c.id === p.id);
+    const imgHtml = p.image
+      ? `<img class="shop-card-img" src="${p.image}" alt="${p.name}" loading="lazy">`
+      : `<div class="shop-card-img-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>`;
+    return `<div class="shop-card">
+      ${imgHtml}
+      <div class="shop-card-body">
+        <div class="shop-card-name">${p.name}</div>
+        <div class="shop-card-desc">${p.description || 'Cliquez pour en savoir plus.'}</div>
+      </div>
+      <div class="shop-card-footer">
+        <span class="shop-card-price">${Number(p.price).toFixed(2)} ${p.currency}</span>
+        <button class="shop-btn${inCart ? ' added' : ''}" onclick="shopAddToCart(${p.id})" id="shop-btn-${p.id}">
+          ${inCart ? 'Ajouté ✓' : 'Ajouter'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function shopCreateBasket() {
+  if (shopBasket) return shopBasket;
+  const res = await fetch(`${TEBEX_BASE}/accounts/${TEBEX_TOKEN}/baskets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ complete_url: window.location.href, cancel_url: window.location.href })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  shopBasket = data.data;
+  return shopBasket;
+}
+
+async function shopAddToCart(pkgId) {
+  const product = shopAllProducts.find(p => p.id === pkgId);
+  if (!product) return;
+  if (shopCart.some(c => c.id === pkgId)) { shopUpdateCartUI(); return; }
+  const btn = document.getElementById('shop-btn-' + pkgId);
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
+  try {
+    const basket = await shopCreateBasket();
+    const res = await fetch(`${TEBEX_BASE}/baskets/${basket.ident}/packages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ package_id: pkgId, quantity: 1 })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    shopCart.push({ id: pkgId, name: product.name, price: product.price, currency: product.currency });
+    shopUpdateCartUI();
+    if (btn) { btn.textContent = 'Ajouté ✓'; btn.classList.add('added'); btn.disabled = false; }
+  } catch (err) {
+    console.error('Add to cart error:', err);
+    if (btn) { btn.textContent = 'Ajouter'; btn.disabled = false; }
+  }
+}
+
+async function shopRemoveFromCart(pkgId) {
+  if (!shopBasket) return;
+  try {
+    await fetch(`${TEBEX_BASE}/baskets/${shopBasket.ident}/packages/remove`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ package_id: pkgId })
+    });
+  } catch (e) { console.error(e); }
+  shopCart = shopCart.filter(c => c.id !== pkgId);
+  const btn = document.getElementById('shop-btn-' + pkgId);
+  if (btn) { btn.textContent = 'Ajouter'; btn.classList.remove('added'); btn.disabled = false; }
+  shopUpdateCartUI();
+}
+
+function shopUpdateCartUI() {
+  const cart = document.getElementById('shop-cart');
+  const count = document.getElementById('shop-cart-count');
+  const toggleCount = document.getElementById('shop-cart-toggle-count');
+  const total = document.getElementById('shop-cart-total');
+  const items = document.getElementById('shop-cart-items');
+  if (!cart) return;
+  const n = shopCart.length;
+  if (count) count.textContent = n;
+  if (toggleCount) toggleCount.textContent = n;
+  const totalPrice = shopCart.reduce((s, c) => s + Number(c.price), 0);
+  if (total) total.textContent = totalPrice.toFixed(2) + ' €';
+  if (items) {
+    items.innerHTML = shopCart.map(c => `
+      <div class="shop-cart-item">
+        <span class="shop-cart-item-name">${c.name}</span>
+        <span class="shop-cart-item-price">${Number(c.price).toFixed(2)} €</span>
+        <button class="shop-cart-item-remove" onclick="shopRemoveFromCart(${c.id})">×</button>
+      </div>`).join('');
+  }
+  cart.style.display = n > 0 ? 'block' : 'none';
+}
+
+function shopToggleCart() {
+  const cart = document.getElementById('shop-cart');
+  if (cart) cart.style.display = cart.style.display === 'none' ? 'block' : 'none';
+}
+
+function shopCheckout() {
+  if (!shopBasket || !shopCart.length) return;
+  const url = shopBasket.links?.checkout || `https://checkout.tebex.io/checkout/${shopBasket.ident}`;
+  window.location.href = url;
+}
+
+document.addEventListener('DOMContentLoaded', shopInit);
