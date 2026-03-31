@@ -159,6 +159,14 @@ requestAnimationFrame(masterLoop);
 ══════════════════════════════════ */
 let chatOpen = false;
 let chatSent = false;
+let chatCategory = null;
+let cpCategory = null;
+
+const CHAT_CATEGORIES = [
+  { label: 'Achat eup',         id: '1488313291569627197', emoji: '🛒' },
+  { label: 'Questions / Aides', id: '1488313391469822002', emoji: '❓' },
+  { label: 'Demande de custom', id: '1488313858232942592', emoji: '🎨' },
+];
 
 function chatToggle() {
   const win = document.getElementById('chat-window');
@@ -166,15 +174,44 @@ function chatToggle() {
   win.classList.toggle('open', chatOpen);
   if (chatOpen) {
     document.getElementById('chat-notif').style.display = 'none';
-    setTimeout(() => {
-      const inp = document.getElementById('chat-pseudo');
-      if (inp && !inp.value) inp.focus();
-      else {
-        const ta = document.getElementById('chat-input');
-        if (ta) ta.focus();
-      }
-    }, 250);
+    if (!chatCategory) {
+      setTimeout(chatInjectChoices, 150);
+    } else {
+      setTimeout(() => {
+        const inp = document.getElementById('chat-pseudo');
+        if (inp && !inp.value) inp.focus();
+        else document.getElementById('chat-input')?.focus();
+      }, 250);
+    }
   }
+}
+
+function chatInjectChoices() {
+  const msgs = document.getElementById('chat-msgs');
+  const typing = document.getElementById('chat-typing');
+  if (!msgs) return;
+  msgs.querySelectorAll('.chat-choices').forEach(el => el.remove());
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-choices';
+  CHAT_CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'chat-choice-btn';
+    btn.textContent = cat.emoji + ' ' + cat.label;
+    btn.onclick = () => {
+      wrap.remove();
+      chatCategory = cat;
+      chatAddMsg(cat.emoji + ' ' + cat.label, 'user');
+      chatShowTyping(true);
+      setTimeout(() => {
+        chatShowTyping(false);
+        chatAddMsg('Super ! Laisse ton pseudo Discord et décris ta demande 👇', 'bot');
+        setTimeout(() => document.getElementById('chat-pseudo')?.focus(), 100);
+      }, 750);
+    };
+    wrap.appendChild(btn);
+  });
+  msgs.insertBefore(wrap, typing);
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 function chatAddMsg(text, type) {
@@ -244,6 +281,8 @@ function chatSend() {
         fields: [
           { name: 'Pseudo', value: pseudo, inline: true },
           { name: 'Page', value: page, inline: true },
+          { name: 'Catégorie', value: chatCategory ? chatCategory.emoji + ' ' + chatCategory.label : 'Non sélectionnée', inline: true },
+          { name: 'Category ID', value: chatCategory ? chatCategory.id : '', inline: false },
           { name: 'Message', value: msg }
         ],
         footer: { text: 'Amarograph Chat · ' + new Date().toLocaleString('fr-FR') }
@@ -267,6 +306,10 @@ function chatSend() {
 
 // Enter dans le champ pseudo → focus textarea
 document.addEventListener('DOMContentLoaded', () => {
+  // Changer le message initial du chat widget
+  const initBotMsg = document.querySelector('#chat-msgs .chat-msg.bot');
+  if (initBotMsg) initBotMsg.textContent = 'Bonjour, en quoi puis-je t\'aider ? 👋';
+
   const pseudo = document.getElementById('chat-pseudo');
   if (pseudo) {
     pseudo.addEventListener('keydown', e => {
@@ -290,6 +333,34 @@ document.addEventListener('DOMContentLoaded', () => {
    PAGE CONTACT — CHAT PLEIN ECRAN
 ══════════════════════════════════ */
 let cpSent = false;
+
+function cpInjectChoices() {
+  const msgs = document.getElementById('cp-msgs');
+  const typing = document.getElementById('cp-typing');
+  if (!msgs) return;
+  msgs.querySelectorAll('.chat-choices').forEach(el => el.remove());
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-choices';
+  CHAT_CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'chat-choice-btn';
+    btn.textContent = cat.emoji + ' ' + cat.label;
+    btn.onclick = () => {
+      wrap.remove();
+      cpCategory = cat;
+      cpAddMsg(cat.emoji + ' ' + cat.label, 'user');
+      cpShowTyping(true);
+      setTimeout(() => {
+        cpShowTyping(false);
+        cpAddMsg('Super ! Laisse ton pseudo Discord et décris ta demande 👇', 'bot');
+        setTimeout(() => document.getElementById('cp-pseudo')?.focus(), 100);
+      }, 750);
+    };
+    wrap.appendChild(btn);
+  });
+  msgs.insertBefore(wrap, typing);
+  msgs.scrollTop = msgs.scrollHeight;
+}
 
 function cpAddMsg(text, type) {
   const msgs = document.getElementById('cp-msgs');
@@ -345,6 +416,8 @@ function cpSend() {
         fields: [
           { name: 'Pseudo', value: pseudo, inline: true },
           { name: 'Page', value: 'contact.html', inline: true },
+          { name: 'Catégorie', value: cpCategory ? cpCategory.emoji + ' ' + cpCategory.label : 'Non sélectionnée', inline: true },
+          { name: 'Category ID', value: cpCategory ? cpCategory.id : '', inline: false },
           { name: 'Message', value: msg }
         ],
         footer: { text: 'Amarograph Contact • ' + new Date().toLocaleString('fr-FR') }
@@ -379,6 +452,12 @@ document.addEventListener('DOMContentLoaded', () => {
     cpPseudo.addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); document.getElementById('cp-input')?.focus(); }
     });
+  }
+  // Page contact : changer message initial + injecter les choix de catégorie
+  const cpFirstMsg = document.querySelector('#cp-msgs .chat-msg.bot');
+  if (cpFirstMsg) cpFirstMsg.textContent = 'Bonjour, en quoi puis-je t\'aider ? 👋';
+  if (document.getElementById('cp-msgs')) {
+    setTimeout(cpInjectChoices, 400);
   }
 });
 

@@ -355,6 +355,13 @@ footer{background:rgba(4,6,10,.85);padding:2rem 3rem;display:flex;align-items:ce
   color:var(--text);align-self:flex-end;
   clip-path:polygon(0% 0%,calc(100% - 6px) 0%,100% 100%,6px 100%)}
 .chat-msg.sent{background:rgba(0,180,80,.08);border:1px solid rgba(0,180,80,.2);
+/* Boutons de choix de catégorie */
+.chat-choices{display:flex;flex-direction:column;gap:.35rem;margin:.3rem 0 .5rem;align-self:flex-start;width:100%}
+.chat-choice-btn{background:rgba(0,170,255,.07);border:1px solid rgba(0,170,255,.22);color:var(--b);
+  font-family:'Quantum',sans-serif;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+  padding:.5rem .9rem;cursor:none;border-radius:2px;text-align:left;transition:all .2s;
+  clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)}
+.chat-choice-btn:hover{background:rgba(0,170,255,.18);border-color:var(--b);transform:translateX(3px)}
   color:#00B450;align-self:center;text-align:center;font-size:.7rem}
 
 .chat-typing{display:none;align-self:flex-start;padding:.4rem .8rem;
